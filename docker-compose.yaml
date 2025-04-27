@@ -1,4 +1,20 @@
 services:
+  api:
+    build:
+      context: ./api
+    ports:
+      - "8000:8000"
+    environment:
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=reports-realm
+      - KEYCLOAK_CLIENT_ID=reports-api
+      - KEYCLOAK_CLIENT_SECRET=oNwoLQdvJAvRcL89SydqCWCe5ry1jMgq
+    depends_on:
+      - keycloak
+    volumes:
+      - ./api:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --workers 2
+
   keycloak_db:
     image: postgres:14
     environment:
@@ -9,6 +25,7 @@ services:
       - ./postgres-keycloak-data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+
   keycloak:
     image: quay.io/keycloak/keycloak:21.1
     environment:
@@ -21,12 +38,15 @@ services:
     command: 
       - start-dev
       - --import-realm
+      - --http-enabled=true
+      - --hostname-strict=false
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
     ports:
       - "8080:8080"
     depends_on:
       - keycloak_db
+
   frontend:
     build:
       context: ./frontend
@@ -34,7 +54,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: http://localhost:8000
-      REACT_APP_KEYCLOAK_URL: http://localhost:8080
+      REACT_APP_API_URL: http://api:8000
+      REACT_APP_KEYCLOAK_URL: http://keycloak:8080
       REACT_APP_KEYCLOAK_REALM: reports-realm
       REACT_APP_KEYCLOAK_CLIENT_ID: reports-frontend
+    depends_on:
+      - api

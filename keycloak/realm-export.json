@@ -122,8 +122,14 @@
         "clientId": "reports-api",
         "enabled": true,
         "clientAuthenticatorType": "client-secret",
-        "secret": "oNwoLQdvJAvRcL89SydqCWCe5ry1jMgq", 
-        "bearerOnly": true
+        "secret": "oNwoLQdvJAvRcL89SydqCWCe5ry1jMgq",
+        "standardFlowEnabled": true,
+        "directAccessGrantsEnabled": true,
+        "serviceAccountsEnabled": true,
+        "authorizationServicesEnabled": true,
+        "attributes": {
+          "client.secret.creation.time": "1700000000"
+        }
       }
     ]
   }
