@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from jose import jwt, JWTError
 from pydantic import BaseModel
@@ -18,6 +19,14 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 security = HTTPBearer()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Конфигурация
 JWKS_URL = os.getenv("JWKS_URL")
@@ -113,4 +122,4 @@ async def get_reports(user: dict = Depends(get_current_user)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8008)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
