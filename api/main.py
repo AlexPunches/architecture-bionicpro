@@ -98,16 +98,27 @@ async def verify_token(token: str) -> dict:
         )
 
 
-async def get_current_user(credentials: HTTPBearer = Depends(security)) -> dict:
+async def validate_prothetic_user(credentials: HTTPBearer = Depends(security)) -> dict:
     try:
-        return await verify_token(credentials.credentials)
+        token_payload = await verify_token(credentials.credentials)
+        if "prothetic_user" not in token_payload.get("realm_access", {}).get("roles", []):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Missing required role"
+            )
+        return token_payload
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Auth error: {e}")
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
 
 
 @app.get("/reports", response_model=list[ReportItem])
-async def get_reports(user: dict = Depends(get_current_user)):
+async def get_reports(user: dict = Depends(validate_prothetic_user)):
     logger.info(f"User {user.get('preferred_username')} accessed reports")
 
     return [
